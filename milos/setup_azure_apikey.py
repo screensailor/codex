@@ -31,7 +31,7 @@ def setup_azure_with_api_key():
     
     # Create config.json
     config = {
-        "model": "gpt-4",  # Change to your deployment name
+        "model": "gpt-4.1_2025-04-14_DZ-EU",
         "provider": "azure",
         "providers": {
             "azure": {
