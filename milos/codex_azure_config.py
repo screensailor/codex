@@ -96,6 +96,11 @@ query_params = {{ api-version = "2025-04-01-preview" }}
         instructions_path = Path(temp_codex_home) / "instructions.md"
         instructions_path.write_text("")
         
+        # Debug: check if auth.json exists in the original CODEX_HOME
+        original_codex_home = Path.home() / ".codex"
+        if (original_codex_home / "auth.json").exists():
+            print(f"Note: auth.json exists in {original_codex_home}", file=sys.stderr)
+        
         # Build Codex command
         codex_cmd = ["codex"] + filtered_args
         

@@ -12,6 +12,7 @@ dependencies = [
 [project.scripts]
 codex-azure = "codex_azure:main"
 codex-azure-alt = "codex_azure_config:main"
+codex-azure-simple = "codex_azure_simple:main"
 get-azure-token = "get_azure_token:main"
 
 [build-system]
