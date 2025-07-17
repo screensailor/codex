@@ -58,19 +58,25 @@ def run_codex_with_azure_auth(args: List[str], env_path: Optional[Path] = None) 
     # Build Codex command with Azure configuration
     codex_cmd = [
         "codex",
-        "--config", "model_provider=azure-ad",
-        "--config", f"model={model_name}",
-        "--config", f'model_providers.azure-ad.name=Azure with AD Auth',
-        "--config", f'model_providers.azure-ad.base_url={api_base}',
-        "--config", f'model_providers.azure-ad.env_http_headers.Authorization=AZURE_OPENAI_TOKEN',
-        "--config", 'model_providers.azure-ad.query_params.api-version=2024-08-01-preview',
+        "-c", "model_provider=azure-ad",
+        "-c", f"model={model_name}",
+        "-c", f'model_providers.azure-ad.name=Azure with AD Auth',
+        "-c", f'model_providers.azure-ad.base_url={api_base}',
+        "-c", 'model_providers.azure-ad.env_http_headers.Authorization=AZURE_OPENAI_TOKEN',
+        "-c", 'model_providers.azure-ad.query_params.api-version=2024-08-01-preview',
     ]
 
     # Add any additional arguments passed to this script
-    codex_cmd.extend(args)
+    # If no arguments provided, add a space to skip the instructions editor
+    if not args:
+        codex_cmd.append(" ")
+    else:
+        codex_cmd.extend(args)
 
     # Run Codex with the configuration
     try:
+        # Debug: print the command
+        print(f"Running command: {' '.join(codex_cmd)}", file=sys.stderr)
         result = subprocess.run(codex_cmd)
         return result.returncode
     except KeyboardInterrupt:
