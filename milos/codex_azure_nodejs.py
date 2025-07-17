@@ -71,15 +71,24 @@ def run_codex_nodejs(args: List[str], env_path: Optional[Path] = None) -> int:
     if not config.get("providers"):
         config["providers"] = {}
     
+    # For Azure OpenAI, we might need to include /openai in the path
+    if not api_base.endswith("/openai"):
+        api_base_with_path = f"{api_base}/openai"
+    else:
+        api_base_with_path = api_base
+    
     config["providers"]["azure"] = {
         "name": "AzureOpenAI",
-        "baseURL": api_base,
+        "baseURL": api_base_with_path,
         "envKey": "AZURE_OPENAI_API_KEY"
     }
     
     # Write updated config
     with open(config_path, "w") as f:
         json.dump(config, f, indent=2)
+    
+    print(f"Updated config at {config_path}", file=sys.stderr)
+    print(f"Azure baseURL: {api_base}", file=sys.stderr)
     
     # Create environment with Azure settings
     env = os.environ.copy()
