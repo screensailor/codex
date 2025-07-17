@@ -51,20 +51,20 @@ def run_codex_with_azure_auth(args: List[str], env_path: Optional[Path] = None) 
             model_name = arg.split("=", 1)[1]
             break
 
-    # If no model specified, you might want to set a default
-    if not model_name:
-        model_name = "gpt-4"  # or your default deployment name
-
     # Build Codex command with Azure configuration
     codex_cmd = [
         "codex",
         "-c", "model_provider=azure-ad",
-        "-c", f"model={model_name}",
         "-c", f'model_providers.azure-ad.name=Azure with AD Auth',
         "-c", f'model_providers.azure-ad.base_url={api_base}',
         "-c", 'model_providers.azure-ad.env_http_headers.Authorization=AZURE_OPENAI_TOKEN',
         "-c", 'model_providers.azure-ad.query_params.api-version=2025-04-01-preview',
     ]
+    
+    # Add model configuration if specified
+    if model_name:
+        codex_cmd.insert(2, "-c")
+        codex_cmd.insert(3, f"model={model_name}")
 
     # Add any additional arguments passed to this script
     # If no arguments provided, add a space to skip the instructions editor

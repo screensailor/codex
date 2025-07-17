@@ -55,13 +55,20 @@ def run_codex_with_config_file(args: List[str], env_path: Optional[Path] = None)
             filtered_args.append(args[i])
             i += 1
     
-    # If no model specified, use a default
-    if not model_name:
-        model_name = "gpt-4"  # or your default deployment name
-    
     # Create a temporary config file
-    config_content = f"""
+    if model_name:
+        config_content = f"""
 model = "{model_name}"
+model_provider = "azure-ad"
+
+[model_providers.azure-ad]
+name = "Azure with AD Auth"
+base_url = "{api_base}"
+env_http_headers = {{ "Authorization" = "AZURE_OPENAI_TOKEN" }}
+query_params = {{ api-version = "2025-04-01-preview" }}
+"""
+    else:
+        config_content = f"""
 model_provider = "azure-ad"
 
 [model_providers.azure-ad]
@@ -79,7 +86,6 @@ query_params = {{ api-version = "2025-04-01-preview" }}
     try:
         # Set CODEX_HOME to use our temporary config
         temp_codex_home = tempfile.mkdtemp()
-        os.environ["CODEX_HOME"] = temp_codex_home
         
         # Copy the temp config to the expected location
         config_path = Path(temp_codex_home) / "config.toml"
@@ -93,9 +99,18 @@ query_params = {{ api-version = "2025-04-01-preview" }}
         # Build Codex command
         codex_cmd = ["codex"] + filtered_args
         
-        # Run Codex
+        # Debug: show what config we're using
+        print(f"Using CODEX_HOME: {temp_codex_home}", file=sys.stderr)
+        print(f"Config file: {config_path}", file=sys.stderr)
+        print(f"Config contents:", file=sys.stderr)
+        print(config_content, file=sys.stderr)
         print(f"Running: {' '.join(codex_cmd)}", file=sys.stderr)
-        result = subprocess.run(codex_cmd)
+        
+        # Create new environment with CODEX_HOME set
+        env = os.environ.copy()
+        env["CODEX_HOME"] = temp_codex_home
+        
+        result = subprocess.run(codex_cmd, env=env)
         return result.returncode
         
     except KeyboardInterrupt:
