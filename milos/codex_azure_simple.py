@@ -65,26 +65,37 @@ def run_codex_simple(args: List[str], env_path: Optional[Path] = None) -> int:
             i += 1
     
     # Build Codex command using -c flags for each config
-    codex_cmd = [
-        "codex",
+    # Check if we should use exec mode
+    use_exec = False
+    if filtered_args and filtered_args[0] not in ["exec", "e", "login"]:
+        # If there's a prompt but it's not a subcommand, use exec mode
+        use_exec = True
+    
+    codex_cmd = ["codex"]
+    
+    # Add exec subcommand if needed
+    if use_exec:
+        codex_cmd.append("exec")
+    
+    # Add config flags
+    codex_cmd.extend([
         "-c", "model_provider=azure-ad",
         "-c", f'model_providers.azure-ad.name=Azure with AD Auth',
         "-c", f'model_providers.azure-ad.base_url={api_base}',
         "-c", f'model_providers.azure-ad.env_http_headers.Authorization=AZURE_OPENAI_TOKEN',
         "-c", 'model_providers.azure-ad.query_params.api-version=2025-04-01-preview',
-    ]
+    ])
     
     # Add model if specified
     if model_name:
         codex_cmd.extend(["-m", model_name])
     
-    # Handle arguments
+    # Add arguments
     if filtered_args:
-        # If there are arguments, add them
         codex_cmd.extend(filtered_args)
-    else:
-        # If no arguments, add empty string as prompt to enter interactive mode
-        codex_cmd.append("")
+    elif not use_exec:
+        # For interactive mode, don't add any prompt
+        pass
     
     # Debug output
     print(f"Running: {' '.join(codex_cmd)}", file=sys.stderr)
