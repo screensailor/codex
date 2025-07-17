@@ -63,7 +63,7 @@ def run_codex_with_azure_auth(args: List[str], env_path: Optional[Path] = None) 
         "-c", f'model_providers.azure-ad.name=Azure with AD Auth',
         "-c", f'model_providers.azure-ad.base_url={api_base}',
         "-c", 'model_providers.azure-ad.env_http_headers.Authorization=AZURE_OPENAI_TOKEN',
-        "-c", 'model_providers.azure-ad.query_params.api-version=2024-08-01-preview',
+        "-c", 'model_providers.azure-ad.query_params.api-version=2025-04-01-preview',
     ]
 
     # Add any additional arguments passed to this script
