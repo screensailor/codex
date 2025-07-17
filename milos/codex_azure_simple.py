@@ -39,6 +39,13 @@ def run_codex_simple(args: List[str], env_path: Optional[Path] = None) -> int:
         print("Error: OPENAI_API_BASE not found in .env", file=sys.stderr)
         return 1
     
+    # Ensure ~/.codex/instructions.md exists to prevent Vim from opening
+    codex_home = Path.home() / ".codex"
+    codex_home.mkdir(exist_ok=True)
+    instructions_file = codex_home / "instructions.md"
+    if not instructions_file.exists():
+        instructions_file.write_text("")
+    
     # Extract deployment name from arguments if provided via --model
     model_name = None
     filtered_args = []
@@ -71,12 +78,13 @@ def run_codex_simple(args: List[str], env_path: Optional[Path] = None) -> int:
     if model_name:
         codex_cmd.extend(["-m", model_name])
     
-    # Add remaining arguments
-    codex_cmd.extend(filtered_args)
-    
-    # If no arguments, add a space to avoid editor
-    if not filtered_args:
-        codex_cmd.append(" ")
+    # Handle arguments
+    if filtered_args:
+        # If there are arguments, add them
+        codex_cmd.extend(filtered_args)
+    else:
+        # If no arguments, add empty string as prompt to enter interactive mode
+        codex_cmd.append("")
     
     # Debug output
     print(f"Running: {' '.join(codex_cmd)}", file=sys.stderr)
