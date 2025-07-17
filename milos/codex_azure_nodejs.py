@@ -95,8 +95,13 @@ def run_codex_nodejs(args: List[str], env_path: Optional[Path] = None) -> int:
     
     # IMPORTANT: According to Microsoft blog, we need BOTH environment variables
     # This is a workaround for a current Codex bug
+    # Note: The token should NOT include "Bearer " prefix for API key auth
     env["AZURE_OPENAI_API_KEY"] = token
     env["OPENAI_API_KEY"] = token  # Required workaround!
+    
+    # Debug: Check token format
+    print(f"Token starts with: {token[:20]}...", file=sys.stderr)
+    print(f"Token length: {len(token)}", file=sys.stderr)
     
     # Build command
     codex_cmd = ["codex", "--provider", "azure"]
