@@ -56,10 +56,15 @@ def run_codex_nodejs(args: List[str], env_path: Optional[Path] = None) -> int:
     # Create environment with Azure settings
     env = os.environ.copy()
     
-    # The Node.js version expects AZURE_OPENAI_API_KEY
+    # IMPORTANT: According to Microsoft blog, we need BOTH environment variables
+    # This is a workaround for a current Codex bug
     env["AZURE_OPENAI_API_KEY"] = token
+    env["OPENAI_API_KEY"] = token  # Required workaround!
+    
+    # Set the base URL - the blog shows it's part of the provider config
+    # But we can try setting it as env var too
     env["AZURE_BASE_URL"] = api_base
-    env["OPENAI_BASE_URL"] = api_base  # Also set this just in case
+    env["OPENAI_BASE_URL"] = api_base
     
     # Build command
     codex_cmd = ["codex", "--provider", "azure"]
