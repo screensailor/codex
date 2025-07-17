@@ -5,6 +5,7 @@ Wrapper for Node.js version of Codex with Azure AD authentication
 
 import os
 import sys
+import json
 import subprocess
 from pathlib import Path
 from typing import List, Optional
@@ -53,6 +54,33 @@ def run_codex_nodejs(args: List[str], env_path: Optional[Path] = None) -> int:
             filtered_args.append(args[i])
             i += 1
     
+    # First, create/update the config file with Azure settings
+    codex_home = Path.home() / ".codex"
+    codex_home.mkdir(exist_ok=True)
+    
+    # Read existing config if it exists
+    config_path = codex_home / "config.json"
+    if config_path.exists():
+        with open(config_path, "r") as f:
+            config = json.load(f)
+    else:
+        config = {}
+    
+    # Update with Azure settings
+    config["provider"] = "azure"
+    if not config.get("providers"):
+        config["providers"] = {}
+    
+    config["providers"]["azure"] = {
+        "name": "AzureOpenAI",
+        "baseURL": api_base,
+        "envKey": "AZURE_OPENAI_API_KEY"
+    }
+    
+    # Write updated config
+    with open(config_path, "w") as f:
+        json.dump(config, f, indent=2)
+    
     # Create environment with Azure settings
     env = os.environ.copy()
     
@@ -60,11 +88,6 @@ def run_codex_nodejs(args: List[str], env_path: Optional[Path] = None) -> int:
     # This is a workaround for a current Codex bug
     env["AZURE_OPENAI_API_KEY"] = token
     env["OPENAI_API_KEY"] = token  # Required workaround!
-    
-    # Set the base URL - the blog shows it's part of the provider config
-    # But we can try setting it as env var too
-    env["AZURE_BASE_URL"] = api_base
-    env["OPENAI_BASE_URL"] = api_base
     
     # Build command
     codex_cmd = ["codex", "--provider", "azure"]
